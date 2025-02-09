@@ -54,7 +54,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 # --- Validation data loader --- #
-val_data_loader = DataLoader(ValData(val_data_dir), batch_size=val_batch_size, shuffle=False, num_workers=24)
+val_data_loader = DataLoader(ValData(val_data_dir), batch_size=val_batch_size, shuffle=False, num_workers=12)
 
 
 # --- Define the network --- #
@@ -72,9 +72,10 @@ net.load_state_dict(torch.load('{}_haze_best_{}_{}'.format(category, network_hei
 
 # --- Use the evaluation model in testing --- #
 net.eval()
-print('--- Testing starts! ---')
-start_time = time.time()
-val_psnr, val_ssim = validation(net, val_data_loader, device, category, save_tag=True)
-end_time = time.time() - start_time
-print('val_psnr: {0:.2f}, val_ssim: {1:.4f}'.format(val_psnr, val_ssim))
-print('validation time is {0:.4f}'.format(end_time))
+if __name__ == '__main__':
+    print('--- Testing starts! ---')
+    start_time = time.time()
+    val_psnr, val_ssim = validation(net, val_data_loader, device, category, save_tag=True)
+    end_time = time.time() - start_time
+    print('val_psnr: {0:.2f}, val_ssim: {1:.4f}'.format(val_psnr, val_ssim))
+    print('validation time is {0:.4f}'.format(end_time))

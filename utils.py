@@ -12,7 +12,7 @@ import torch
 import torch.nn.functional as F
 import torchvision.utils as utils
 from math import log10
-from skimage import measure
+from skimage.metrics import structural_similarity as compare_ssim
 
 
 def to_psnr(dehaze, gt):
@@ -31,7 +31,24 @@ def to_ssim_skimage(dehaze, gt):
 
     dehaze_list_np = [dehaze_list[ind].permute(0, 2, 3, 1).data.cpu().numpy().squeeze() for ind in range(len(dehaze_list))]
     gt_list_np = [gt_list[ind].permute(0, 2, 3, 1).data.cpu().numpy().squeeze() for ind in range(len(dehaze_list))]
-    ssim_list = [measure.compare_ssim(dehaze_list_np[ind],  gt_list_np[ind], data_range=1, multichannel=True) for ind in range(len(dehaze_list))]
+    ##ssim_list = [compare_ssim(dehaze_list_np[ind],  gt_list_np[ind], data_range=1, multichannel=True) for ind in range(len(dehaze_list))]
+    
+    ssim_list = []
+    for ind in range(len(dehaze_list)):
+        # 获取当前图像的尺寸
+        height, width, _ = dehaze_list_np[ind].shape
+        win_size = min(7, height, width)  # 动态调整窗口大小
+
+        # 计算 SSIM
+        ssim = compare_ssim(
+            dehaze_list_np[ind], 
+            gt_list_np[ind], 
+            data_range=1, 
+            multichannel=True, 
+            win_size=win_size, 
+            channel_axis=-1  # 假设通道在最后一个维度
+        )
+        ssim_list.append(ssim)
 
     return ssim_list
 
